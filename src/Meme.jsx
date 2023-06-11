@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 
+// Meme component that displays a random meme and allows users to add top and bottom text
 export default function Meme() {
   const [meme, setMeme] = useState({
     topText: "",
@@ -7,16 +8,21 @@ export default function Meme() {
     randomImage: "https://api.memegen.link/images/bender.jpg",
   });
   const [allMemes, setAllMemes] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetch("https://api.memegen.link/templates")
       .then((res) => res.json())
-      .then((data) => setAllMemes(data));
+      .then((data) => {
+        setAllMemes(data);
+        setLoading(false);
+      })
+      .catch((err) => console.error("Error fetching memes.", err));
   }, []);
 
   function getMemeImage() {
     const randomNumber = Math.floor(Math.random() * allMemes.length);
-    const url = allMemes[randomNumber].blank;
+    const url = allMemes[randomNumber]?.blank;
     setMeme((prevMeme) => ({
       ...prevMeme,
       randomImage: url,
@@ -29,6 +35,10 @@ export default function Meme() {
       ...prevMeme,
       [name]: value,
     }));
+  }
+
+  if (loading) {
+    return <div>Loading...</div>;
   }
 
   return (
@@ -51,11 +61,11 @@ export default function Meme() {
           onChange={handleChange}
         />
         <button className="form--button" onClick={getMemeImage}>
-          Get a new meme image 🖼
+          Get a new meme image 🔄
         </button>
       </div>
       <div className="meme">
-        <img src={meme.randomImage} className="meme--image" alt="meme" />
+        <img src={meme.randomImage} className="meme--image" alt="Random meme" />
         <h2 className="meme--text top">{meme.topText}</h2>
         <h2 className="meme--text bottom">{meme.bottomText}</h2>
       </div>
